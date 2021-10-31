@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MangaDex Reader</string>
+    <string name="btn_search_content_description">Search button</string>
+</resources>
