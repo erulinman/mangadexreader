@@ -3,22 +3,25 @@ package info.erulinman.mangadexreader.ui
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import info.erulinman.mangadexreader.databinding.ItemMangaListBinding
-import info.erulinman.mangadexreader.model.entities.Author
-import info.erulinman.mangadexreader.model.entities.DefaultData
-import info.erulinman.mangadexreader.model.entities.MangaAttributes
-import info.erulinman.mangadexreader.model.entities.Relationship
+import info.erulinman.mangadexreader.model.entities.*
 
-class MangaListAdapter : ListAdapter<DefaultData<MangaAttributes>, MangaListAdapter.MangaViewHolder>(MangaDiffCallback) {
-    private var authors: List<Author>? = null
+class MangaListAdapter : RecyclerView.Adapter<MangaListAdapter.MangaViewHolder>() {
 
-    fun loadAuthors(authors: List<Author>) {
-        Log.i(TAG, "MangaListAdapter.loadAuthors(): $authors")
-        this.authors = authors
+    private var mangaList: List<Manga>? = null
+    private var authorList: List<Author>? = null
+
+    fun setAuthorList(_authors: List<Author>) {
+        authorList = _authors
     }
+
+    fun setMangaList(_mangaList: List<Manga>) {
+        mangaList = _mangaList
+    }
+
+    class MangaViewHolder(val binding: ItemMangaListBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MangaViewHolder {
         return MangaViewHolder(
@@ -31,8 +34,8 @@ class MangaListAdapter : ListAdapter<DefaultData<MangaAttributes>, MangaListAdap
     }
 
     override fun onBindViewHolder(holder: MangaViewHolder, position: Int) {
-        val manga = getItem(position)
-        val mangaTitle: String = manga.attributes.title.let { titleList ->
+        val manga = mangaList!![position]
+        val title = manga.attributes.title.let { titleList ->
             if (titleList.keys.contains(BASE_LANG)) {
                 return@let titleList.getOrDefault(BASE_LANG, "(Empty name)")
             } else if (titleList.keys.isNotEmpty()) {
@@ -40,42 +43,32 @@ class MangaListAdapter : ListAdapter<DefaultData<MangaAttributes>, MangaListAdap
             }
             return@let "(Empty name)"
         }
-        val mangaAuthors = authors?.let { authors ->
-            val outputString = ""
+        val author = authorList?.let { authorList ->
+            var outputString = ""
             manga.relationships.filter { it.type == Relationship.AUTHOR }.forEach { currentMangaAuthor ->
-                authors.forEach { loadedAuthor ->
+                Log.d(TAG, "$currentMangaAuthor")
+                authorList.forEach { loadedAuthor ->
                     if (currentMangaAuthor.id == loadedAuthor.id) {
-                        outputString.plus(loadedAuthor.attributes.name)
+                        val name = loadedAuthor.attributes.name
+                        outputString = if (outputString.isEmpty()) name else "$outputString, $name"
                     }
                 }
             }
             return@let outputString
-        } ?: run {
-            Log.i(TAG, "Authors = null")
-            return@run null
         }
 
         holder.binding.apply {
-            title.text = mangaTitle
-            author.text = mangaAuthors
+            Log.d(TAG, "title: $title")
+            this.title.text = title
+            Log.d(TAG, "author: $author")
+            this.author.text = author
         }
     }
 
-    inner class MangaViewHolder(val binding: ItemMangaListBinding) :
-        RecyclerView.ViewHolder(binding.root)
+    override fun getItemCount() = mangaList?.size ?: 0
 
     companion object {
         private const val TAG = "MangaListAdapter.TAG"
         private const val BASE_LANG = "en"
-    }
-}
-
-object MangaDiffCallback : DiffUtil.ItemCallback<DefaultData<MangaAttributes>>() {
-    override fun areItemsTheSame(oldItem: DefaultData<MangaAttributes>, newItem: DefaultData<MangaAttributes>): Boolean {
-        return oldItem.id == newItem.id
-    }
-
-    override fun areContentsTheSame(oldItem: DefaultData<MangaAttributes>, newItem: DefaultData<MangaAttributes>): Boolean {
-        return oldItem == newItem
     }
 }

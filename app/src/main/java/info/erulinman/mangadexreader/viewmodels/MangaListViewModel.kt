@@ -30,65 +30,59 @@ class MangaListViewModel(private val repository: Repository) : ViewModel() {
     val authors: LiveData<List<Author>>
         get() = _authors
 
-    fun getMangaListByTitle(title: String) {
-        _mangaList.value = mutableListOf()
-        _authorsIds = mutableListOf()
-        _loading.value = true
+    fun loadData(title: String) = viewModelScope.launch(Dispatchers.IO) {
+        _authorsIds.clear()
+        _loading.postValue(true)
+        loadMangaList(title)
+        loadAuthorList()
+        _loading.postValue(false)
+    }
 
-        // Get list of manga
-        viewModelScope.launch(Dispatchers.IO) {
-            val mangaListResponse = try {
-                repository.mangaDexService.getMangaListByTitle(title)
-            } catch (e: HttpException) {
-                Log.e(TAG, "HttpException, unexpected response")
-                return@launch
-            } catch (e: IOException) {
-                Log.e(TAG, "IOException, you might not have internet connection ")
-                return@launch
-            }
-            if (mangaListResponse.isSuccessful) {
-                Log.i(TAG, "mangaListResponse is successful")
-                mangaListResponse.body()?.let { response ->
-                    response.data.let { mangaList ->
-                        _mangaList.postValue(mangaList)
-                        mangaList.forEach { manga ->
-                            manga.relationships.filter { it.type == Relationship.AUTHOR }.forEach {
-                                _authorsIds.add(it.id)
-                            }
+    private suspend fun loadMangaList(title: String) {
+        val mangaListResponse = try {
+            repository.mangaDexService.getMangaListByTitle(title)
+        } catch (e: HttpException) {
+            Log.e(TAG, "HttpException, unexpected response")
+            return
+        } catch (e: IOException) {
+            Log.e(TAG, "IOException, you might not have internet connection ")
+            return
+        }
+        if (mangaListResponse.isSuccessful) {
+            Log.i(TAG, "mangaListResponse is successful")
+            mangaListResponse.body()?.let { response ->
+                response.data.let response@{ mangaList ->
+                    _mangaList.postValue(mangaList)
+                    mangaList.forEach { manga ->
+                        manga.relationships.filter { it.type == Relationship.AUTHOR }.forEach {
+                            if (_authorsIds.size >= 100) return@response
+                            _authorsIds.add(it.id)
                         }
                     }
                 }
-            } else {
-                Log.i(TAG, "mangaListResponse unsuccessful")
             }
-            val authorListResponse = try {
-                Log.i(TAG, "_authorIds = $_authorsIds")
-                Log.i(TAG, "_authorIds.size = ${_authorsIds.size}")
-                repository.mangaDexService.getAuthorList(_authorsIds)
-            } catch (e: HttpException) {
-                Log.e(TAG, "HttpException, unexpected response")
-                return@launch
-            } catch (e: IOException) {
-                Log.e(TAG, "IOException, you might not have internet connection ")
-                return@launch
+        } else {
+            Log.i(TAG, "mangaListResponse unsuccessful")
+        }
+    }
+
+    private suspend fun loadAuthorList() {
+        val authorListResponse = try {
+            repository.mangaDexService.getAuthorList(_authorsIds)
+        } catch (e: HttpException) {
+            Log.e(TAG, "HttpException, unexpected response")
+            return
+        } catch (e: IOException) {
+            Log.e(TAG, "IOException, you might not have internet connection ")
+            return
+        }
+        if (authorListResponse.isSuccessful) {
+            Log.i(TAG, "authorListResponse is successful")
+            authorListResponse.body()?.let {
+                _authors.postValue(it.data)
             }
-            if (authorListResponse.isSuccessful) {
-                Log.i(TAG, "authorListResponse is successful")
-                authorListResponse.body()?.let {
-                    _authors.postValue(it.data)
-                    Log.i(
-                        TAG,
-                        "authorListResponse Body:\n" +
-                                "Result: ${it.result}\n" +
-                                "Total: ${it.total}\n" +
-                                "Body list size: ${it.data.size}\n" +
-                                "Authors: ${it.data}"
-                    )
-                }
-            } else {
-                Log.i(TAG, "authorListResponse unsuccessful")
-            }
-            _loading.postValue(false)
+        } else {
+            Log.i(TAG, "authorListResponse unsuccessful")
         }
     }
 

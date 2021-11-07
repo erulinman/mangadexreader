@@ -10,7 +10,9 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:paddingTop="4dp"
-        app:layout_constraintBottom_toTopOf="@id/editMangaTitle"
+        android:scrollbars="vertical"
+        android:scrollbarSize="8dp"
+        app:layout_constraintBottom_toTopOf="@id/progressBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,13 +22,14 @@
 
     <ProgressBar
         android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        android:indeterminate="true"
+        style="?android:attr/progressBarStyleHorizontal"
         app:layout_constraintBottom_toTopOf="@id/editMangaTitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible"/>
 
     <EditText
@@ -36,10 +39,8 @@
         android:lines="1"
         android:inputType="text"
         android:textSize="24sp"
-        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/searchButton"
-        app:layout_constraintTop_toBottomOf="@id/recyclerView"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="berserk"/>
 

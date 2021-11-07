@@ -1,5 +1,6 @@
 package info.erulinman.mangadexreader.ui.fragments
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -47,29 +48,29 @@ class MangaListFragment : Fragment() {
     private fun setListeners() = binding.apply {
         searchButton.setOnClickListener {
             val title = binding.editMangaTitle.text.toString()
-            viewModel.getMangaListByTitle(title)
+            viewModel.loadData(title)
             (requireActivity() as MainActivity).closeKeyboard(binding.root)
         }
     }
 
-
     private fun observeViewModel(adapter: MangaListAdapter) = viewModel.apply {
         mangaList.observe(viewLifecycleOwner) { mangaList ->
             mangaList?.let {
-                adapter.submitList(it)
-                adapter.bi
+                Log.i(TAG, "Manga: $it")
+                adapter.setMangaList(it)
+                adapter.notifyDataSetChanged()
             }
         }
         authors.observe(viewLifecycleOwner) { authorList ->
             authorList?.let {
-                Log.i(TAG, "Authors in observe: $it")
-                adapter.loadAuthors(it)
+                Log.i(TAG, "Author: $it")
+                adapter.setAuthorList(it)
+                adapter.notifyDataSetChanged()
             }
-
         }
         loading.observe(viewLifecycleOwner) { isLoading ->
-            isLoading?.let { loading ->
-                val visibility = if (loading) View.VISIBLE else View.GONE
+            isLoading?.let {
+                val visibility = if (it) View.VISIBLE else View.GONE
                 binding.progressBar.visibility = visibility
             }
         }
