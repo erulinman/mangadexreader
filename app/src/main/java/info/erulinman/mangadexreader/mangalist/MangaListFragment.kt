@@ -1,6 +1,5 @@
-package info.erulinman.mangadexreader.ui.fragments
+package info.erulinman.mangadexreader.mangalist
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,14 +11,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import info.erulinman.mangadexreader.MDRApp
 import info.erulinman.mangadexreader.MainActivity
 import info.erulinman.mangadexreader.databinding.FragmentMangaListBinding
-import info.erulinman.mangadexreader.ui.MangaListAdapter
-import info.erulinman.mangadexreader.viewmodels.MangaListViewModel
-import info.erulinman.mangadexreader.viewmodels.ViewModelFactory
 
 class MangaListFragment : Fragment() {
     private val viewModel by viewModels<MangaListViewModel> {
         val repository = (requireContext().applicationContext as MDRApp).repository
-        ViewModelFactory(repository)
+        MangaListViewModel.Factory(repository)
     }
 
     private val mangaListAdapter by lazy { MangaListAdapter() }

@@ -1,11 +1,11 @@
-package info.erulinman.mangadexreader.ui
+package info.erulinman.mangadexreader.mangalist
 
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import info.erulinman.mangadexreader.databinding.ItemMangaListBinding
-import info.erulinman.mangadexreader.model.entities.*
+import info.erulinman.mangadexreader.api.entities.*
 
 class MangaListAdapter : RecyclerView.Adapter<MangaListAdapter.MangaViewHolder>() {
 

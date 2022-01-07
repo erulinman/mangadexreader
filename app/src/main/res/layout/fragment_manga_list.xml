@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="info.erulinman.mangadexreader.ui.fragments.MangaListFragment">
+    tools:context="info.erulinman.mangadexreader.mangalist.MangaListFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

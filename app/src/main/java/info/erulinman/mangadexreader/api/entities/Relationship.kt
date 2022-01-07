@@ -1,4 +1,4 @@
-package info.erulinman.mangadexreader.model.entities
+package info.erulinman.mangadexreader.api.entities
 
 data class Relationship(
     val id: String,

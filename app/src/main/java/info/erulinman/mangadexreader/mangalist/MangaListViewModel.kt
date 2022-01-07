@@ -1,20 +1,19 @@
-package info.erulinman.mangadexreader.viewmodels
+package info.erulinman.mangadexreader.mangalist
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.*
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import info.erulinman.mangadexreader.model.Repository
-import info.erulinman.mangadexreader.model.entities.Author
-import info.erulinman.mangadexreader.model.entities.Manga
-import info.erulinman.mangadexreader.model.entities.Relationship
+import info.erulinman.mangadexreader.api.RemoteRepositoryImpl
+import info.erulinman.mangadexreader.api.entities.Author
+import info.erulinman.mangadexreader.api.entities.Manga
+import info.erulinman.mangadexreader.api.entities.Relationship
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import java.lang.IllegalStateException
 
-class MangaListViewModel(private val repository: Repository) : ViewModel() {
+class MangaListViewModel(private val repository: RemoteRepositoryImpl) : ViewModel() {
 
     private val _mangaList = MutableLiveData<List<Manga>>()
     val mangaList: LiveData<List<Manga>>
@@ -88,5 +87,15 @@ class MangaListViewModel(private val repository: Repository) : ViewModel() {
 
     companion object {
        private const val TAG = "MangaListViewModel.TAG"
+    }
+
+    class Factory(private val repository: RemoteRepositoryImpl) : ViewModelProvider.Factory {
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            val viewModel = when(modelClass) {
+                MangaListViewModel::class.java -> { MangaListViewModel(repository) }
+                else -> { throw IllegalStateException("Unknown view model class") }
+            }
+            return viewModel as T
+        }
     }
 }

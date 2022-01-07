@@ -1,8 +1,9 @@
 package info.erulinman.mangadexreader
 
 import android.app.Application
-import info.erulinman.mangadexreader.model.Repository
+import info.erulinman.mangadexreader.api.RemoteRepository
+import info.erulinman.mangadexreader.api.RemoteRepositoryImpl
 
 class MDRApp : Application() {
-    val repository: Repository by lazy { Repository() }
+    val repository: RemoteRepositoryImpl by lazy { RemoteRepositoryImpl() }
 }

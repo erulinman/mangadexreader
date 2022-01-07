@@ -1,13 +1,11 @@
 package info.erulinman.mangadexreader.api
 
-import info.erulinman.mangadexreader.model.entities.Author
-import info.erulinman.mangadexreader.model.entities.DefaultResponse
-import info.erulinman.mangadexreader.model.entities.Manga
+import info.erulinman.mangadexreader.api.entities.Author
+import info.erulinman.mangadexreader.api.entities.DefaultResponse
+import info.erulinman.mangadexreader.api.entities.Manga
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
-
-const val BASE_URL = "https://api.mangadex.org"
 
 interface MangaDexService {
     @GET("/manga")

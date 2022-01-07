@@ -1,4 +1,4 @@
-package info.erulinman.mangadexreader.model.entities
+package info.erulinman.mangadexreader.api.entities
 
 typealias Manga = DefaultData<MangaAttributes>
 typealias Author = DefaultData<AuthorAttributes>
