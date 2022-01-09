@@ -13,7 +13,9 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.lang.IllegalStateException
 
-class MangaListViewModel(private val repository: RemoteRepositoryImpl) : ViewModel() {
+class MangaListViewModel @Inject constructor(
+    private val repository: RemoteRepository
+) : ViewModel() {
 
     private val _mangaList = MutableLiveData<List<Manga>>()
     val mangaList: LiveData<List<Manga>>

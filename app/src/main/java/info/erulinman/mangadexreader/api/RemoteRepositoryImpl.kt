@@ -1,9 +1,11 @@
 package info.erulinman.mangadexreader.api
 
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import java.lang.Exception
+import javax.inject.Inject
 
-const val BASE_URL = "https://api.mangadex.org"
+class RemoteRepositoryImpl @Inject constructor(
+    private val service: MangaDexService
+) : RemoteRepository {
 
 class RemoteRepositoryImpl : RemoteRepository {
 

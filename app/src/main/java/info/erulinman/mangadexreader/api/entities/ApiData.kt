@@ -1,9 +1,9 @@
 package info.erulinman.mangadexreader.api.entities
 
-typealias Manga = DefaultData<MangaAttributes>
-typealias Author = DefaultData<AuthorAttributes>
+typealias Manga = ApiData<MangaAttributes>
+typealias Author = ApiData<AuthorAttributes>
 
-data class DefaultData<T>(
+data class ApiData<T>(
     val id: String,
     val type: String,
     val attributes: T,
