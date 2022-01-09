@@ -7,12 +7,17 @@ class RemoteRepositoryImpl @Inject constructor(
     private val service: MangaDexService
 ) : RemoteRepository {
 
-class RemoteRepositoryImpl : RemoteRepository {
+    override suspend fun getMangaList(title: String) = try {
+        val apiResponse = service.getMangaList(title)
+        NetworkResponse.Success(apiResponse.data)
+    } catch (e: Exception) {
+        NetworkResponse.Failure(e)
+    }
 
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    val mangaDexService: MangaDexService = retrofit.create(MangaDexService::class.java)
+    override suspend fun getAuthorList(idList: List<String>) = try {
+        val apiResponse = service.getAuthorList(idList)
+        NetworkResponse.Success(apiResponse.data)
+    } catch (e: Exception) {
+        NetworkResponse.Failure(e)
+    }
 }

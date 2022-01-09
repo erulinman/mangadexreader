@@ -55,7 +55,7 @@ class MangaListFragment : Fragment() {
     private fun setListeners() = binding.apply {
         searchButton.setOnClickListener {
             val title = binding.editMangaTitle.text.toString()
-            viewModel.loadData(title)
+            viewModel.fetchData(title)
             (requireActivity() as MainActivity).closeKeyboard(binding.root)
         }
     }
