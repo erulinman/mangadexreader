@@ -2,17 +2,18 @@ package info.erulinman.mangadexreader.mangalist
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.Lazy
 import info.erulinman.mangadexreader.App
 import info.erulinman.mangadexreader.MainActivity
+import info.erulinman.mangadexreader.R
 import info.erulinman.mangadexreader.databinding.FragmentMangaListBinding
+import info.erulinman.mangadexreader.utils.DataState
 import javax.inject.Inject
 
 class MangaListFragment : Fragment() {
@@ -24,9 +25,17 @@ class MangaListFragment : Fragment() {
         ViewModelProvider(this, viewModelFactory.get()).get(MangaListViewModel::class.java)
     }
 
-    private val mangaListAdapter by lazy { MangaListAdapter() }
+    private var _adapter: MangaListAdapter? = null
+    private val adapter: MangaListAdapter get() {
+        checkNotNull(_adapter)
+        return _adapter as MangaListAdapter
+    }
 
-    private lateinit var binding: FragmentMangaListBinding
+    private var _binding: FragmentMangaListBinding? = null
+    private val binding: FragmentMangaListBinding get() {
+        checkNotNull(_binding)
+        return _binding as FragmentMangaListBinding
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -38,52 +47,56 @@ class MangaListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentMangaListBinding.inflate(inflater, container, false)
-        setupRecyclerView()
-        setListeners()
-        observeViewModel(mangaListAdapter)
+        _adapter = MangaListAdapter()
+        _binding = FragmentMangaListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    private fun setupRecyclerView() = binding.apply {
-        recyclerView.apply {
-            adapter = mangaListAdapter
-            layoutManager = LinearLayoutManager(requireContext())
-        }
-    }
-
-    private fun setListeners() = binding.apply {
-        searchButton.setOnClickListener {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.searchButton.setOnClickListener {
             val title = binding.editMangaTitle.text.toString()
-            viewModel.fetchData(title)
+            viewModel.fetchManga(title)
             (requireActivity() as MainActivity).closeKeyboard(binding.root)
         }
+        binding.recyclerView.adapter = adapter
+        observeViewModel()
     }
 
-    private fun observeViewModel(adapter: MangaListAdapter) = viewModel.apply {
-        mangaList.observe(viewLifecycleOwner) { mangaList ->
-            mangaList?.let {
-                Log.i(TAG, "Manga: $it")
-                adapter.setMangaList(it)
-                adapter.notifyDataSetChanged()
-            }
-        }
-        authors.observe(viewLifecycleOwner) { authorList ->
-            authorList?.let {
-                Log.i(TAG, "Author: $it")
-                adapter.setAuthorList(it)
-                adapter.notifyDataSetChanged()
-            }
-        }
-        loading.observe(viewLifecycleOwner) { isLoading ->
-            isLoading?.let {
-                val visibility = if (it) View.VISIBLE else View.GONE
-                binding.progressBar.visibility = visibility
-            }
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _adapter = null
+        _binding = null
     }
 
-    companion object {
-        const val TAG = "MangaListFragment.TAG"
+    private fun observeViewModel() = viewModel.apply {
+        dataState.observe(viewLifecycleOwner) { dataState ->
+            if (dataState == null) return@observe
+            when (dataState) {
+                is DataState.Empty -> binding.apply {
+                    progressBar.isVisible = false
+                    message.setText(R.string.tv_empty_list_message)
+                    message.isVisible = true
+                    recyclerView.isVisible = false
+                }
+                is DataState.Loading -> binding.apply {
+                    progressBar.isVisible = true
+                    message.isVisible = false
+                }
+                is DataState.Error -> binding.apply {
+                    progressBar.isVisible = false
+                    message.text = dataState.msg
+                    message.isVisible = true
+                    recyclerView.isVisible = false
+                }
+                is DataState.Loaded -> binding.apply {
+                    progressBar.isVisible = false
+                    message.isVisible = false
+                    recyclerView.isVisible = true
+                    adapter.submitList(dataState.data)
+                }
+            }
+        }
+
     }
 }

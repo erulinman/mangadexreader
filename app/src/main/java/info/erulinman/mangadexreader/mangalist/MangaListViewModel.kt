@@ -1,52 +1,37 @@
 package info.erulinman.mangadexreader.mangalist
 
 import androidx.lifecycle.*
-import androidx.lifecycle.ViewModel
+import info.erulinman.mangadexreader.api.MangaRepository
 import info.erulinman.mangadexreader.api.NetworkResponse
-import info.erulinman.mangadexreader.api.RemoteRepository
-import info.erulinman.mangadexreader.api.entities.Author
 import info.erulinman.mangadexreader.api.entities.Manga
-import kotlinx.coroutines.Dispatchers
+import info.erulinman.mangadexreader.utils.DataState
 import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 import javax.inject.Inject
 
 class MangaListViewModel @Inject constructor(
-    private val repository: RemoteRepository
+    private val repository: MangaRepository
 ) : ViewModel() {
 
-    private val _mangaList = MutableLiveData<List<Manga>>()
-    val mangaList: LiveData<List<Manga>> = _mangaList
+    private val _dataState = MutableLiveData<DataState<List<Manga>>>(DataState.Empty)
+    val dataState: LiveData<DataState<List<Manga>>> = _dataState
 
-    private var authorsIds = mutableListOf<String>()
-
-    private val _loading = MutableLiveData(false)
-    val loading: LiveData<Boolean> = _loading
-
-    private val _authors = MutableLiveData<List<Author>>()
-    val authors: LiveData<List<Author>> = _authors
-
-    fun fetchData(title: String) = viewModelScope.launch {
-        authorsIds.clear()
-        _loading.postValue(true)
-        fetchManga(title)
-        _loading.postValue(false)
-    }
-
-    private suspend fun fetchManga(title: String) = viewModelScope.launch(Dispatchers.IO) {
-        val response = repository.getMangaList(title)
-        when (response) {
+    fun fetchManga(title: String) = viewModelScope.launch {
+        _dataState.postValue(DataState.Loading)
+        when (val response = repository.getMangaList(title)) {
             is NetworkResponse.Success -> {
-                _mangaList.postValue(response.data)
+                val value = DataState.Loaded(response.data)
+                _dataState.postValue(value)
             }
             is NetworkResponse.Failure -> {
-                // TODO
+                val value = DataState.Error(response.exception.toString())
+                _dataState.postValue(value)
             }
         }
     }
 
     class Factory @Inject constructor(
-        private val repository: RemoteRepository
+        private val repository: MangaRepository
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             val viewModel = when(modelClass) {
